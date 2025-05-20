@@ -111,7 +111,6 @@ def parse_course_activities(html: str) -> List[Activity]:
         if display_text:
             text = display_text.get_text(" ", strip=True)
             m = _DATE_RANGE_RE.search(text)
-            print(m)
             if m:
                 open_time = _parse_datetime(m.group(1))
                 due_time = _parse_datetime(m.group(2))

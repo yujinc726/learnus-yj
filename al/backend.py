@@ -93,9 +93,14 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     }
 
     # Fetch each course activities sequentially to avoid thread-safety issues
-    activities_by_course: Dict[int, List] = {
-        cid: _get_course_activities_cached(client, cid) for cid in course_ids
-    }
+    activities_by_course: Dict[int, List] = {}
+    for cid in course_ids:
+        try:
+            activities_by_course[cid] = _get_course_activities_cached(client, cid)
+        except Exception as ex:
+            import logging
+            logging.exception("[Alimi] Failed to fetch activities for course %s: %s", cid, ex)
+            activities_by_course[cid] = []  # skip problematic course to avoid total failure
 
     # Collect assignments that require detail fetch
     assign_need_detail: List[Tuple[int, int, object]] = []  # (course_id, module_id, activity_ref)
@@ -115,7 +120,12 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
 
     # Fetch assignment details sequentially as well
     for cid, module_id, act in assign_need_detail:
-        detail = client.get_assignment_detail(module_id)
+        try:
+            detail = client.get_assignment_detail(module_id)
+        except Exception as ex:
+            import logging
+            logging.exception("[Alimi] Failed to fetch assignment detail %s: %s", module_id, ex)
+            continue
         act.extra.update(detail)
         if detail.get("due_time") and act.due_time is None:
             act.due_time = detail["due_time"]
