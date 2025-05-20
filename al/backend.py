@@ -92,15 +92,10 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
         for c in client.get_courses()
     }
 
-    # Parallel fetch of course activities with simple ThreadPoolExecutor
-    def fetch(cid):
-        return cid, _get_course_activities_cached(client, cid)
-
-    activities_by_course: Dict[int, List] = {}
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=min(16, len(course_ids))) as pool:
-        for cid, acts in pool.map(fetch, course_ids):
-            activities_by_course[cid] = acts
+    # Fetch each course activities sequentially to avoid thread-safety issues
+    activities_by_course: Dict[int, List] = {
+        cid: _get_course_activities_cached(client, cid) for cid in course_ids
+    }
 
     # Collect assignments that require detail fetch
     assign_need_detail: List[Tuple[int, int, object]] = []  # (course_id, module_id, activity_ref)
@@ -118,20 +113,12 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                     assign_need_detail.append((cid, a.id, a))
             # nothing else yet
 
-    # Fetch assignment details in parallel
-    def fetch_assign(module_id):
-        return module_id, client.get_assignment_detail(module_id)
-
-    if assign_need_detail:
-        with ThreadPoolExecutor(max_workers=min(16, len(assign_need_detail))) as pool:
-            for module_id, detail in pool.map(lambda t: fetch_assign(t[1]), assign_need_detail):
-                # find corresponding activity object
-                for cid, mid, act in assign_need_detail:
-                    if mid == module_id:
-                        act.extra.update(detail)
-                        if detail.get("due_time") and act.due_time is None:
-                            act.due_time = detail["due_time"]
-                        break
+    # Fetch assignment details sequentially as well
+    for cid, module_id, act in assign_need_detail:
+        detail = client.get_assignment_detail(module_id)
+        act.extra.update(detail)
+        if detail.get("due_time") and act.due_time is None:
+            act.due_time = detail["due_time"]
 
     # Now build lists
     for cid in course_ids:

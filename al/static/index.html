@@ -147,17 +147,21 @@
     }
 
     /* Logout button hover and disabled styles */
-    #logoutBtn {
+    #logoutBtn, #homeBtn {
       transition: background-color 0.15s ease;
     }
 
     #logoutBtn:hover,
-    #logoutBtn:focus {
+    #logoutBtn:focus,
+    #homeBtn:hover,
+    #homeBtn:focus {
       background-color: rgba(0, 0, 0, 0.05); /* subtle darkening */
     }
 
     #logoutBtn.disabled,
-    #logoutBtn:disabled {
+    #logoutBtn:disabled,
+    #homeBtn.disabled,
+    #homeBtn:disabled {
       opacity: 0.6;
       pointer-events: none;
     }
@@ -166,7 +170,7 @@
 <body class="py-4">
   <h1 class="mb-4 d-flex justify-content-between align-items-center">LearnUs Alimi
     <div>
-      <a href="/" id="homeBtn" class="btn btn-outline-primary btn-sm me-2 d-none"><i class="fa-solid fa-house me-1"></i>Main</a>
+      <a href="/" id="homeBtn" class="btn btn-outline-secondary btn-sm me-1 d-none"><i class="fa-solid fa-house me-1"></i>Main</a>
       <button id="logoutBtn" class="btn btn-outline-secondary btn-sm d-none"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Logout</button>
     </div></h1>
   <p id="subtitle" class="mb-4 text-muted">Developed by 차유진</p>
