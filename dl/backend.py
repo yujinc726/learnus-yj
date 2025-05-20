@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
 
-app = FastAPI(title="LearnUs Calendar API")
+app = FastAPI(title="LearnUs Downloader API")
 
 # Session store now may contain either a LearnUsClient (for normal users) or None (for guest users).
 _SESSIONS: Dict[str, Optional[LearnUsClient]] = {}

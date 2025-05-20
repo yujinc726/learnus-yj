@@ -266,13 +266,13 @@
         token = data.token;
         const remember = document.getElementById('rememberMe').checked;
         if (remember) {
-          localStorage.setItem('learnus_token', token);
-          localStorage.setItem('learnus_id', username);
-          localStorage.setItem('learnus_pw', password);
+          localStorage.setItem('al_token', token);
+          localStorage.setItem('al_id', username);
+          localStorage.setItem('al_pw', password);
         } else {
-          localStorage.removeItem('learnus_token');
-          localStorage.removeItem('learnus_id');
-          localStorage.removeItem('learnus_pw');
+          localStorage.removeItem('al_token');
+          localStorage.removeItem('al_id');
+          localStorage.removeItem('al_pw');
         }
         loginForm.classList.add('d-none');
         homeBtn.classList.remove('d-none');
@@ -384,17 +384,17 @@
       try {
         await fetch('/al/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
       } catch {}
-      localStorage.removeItem('learnus_token');
-      localStorage.removeItem('learnus_id');
-      localStorage.removeItem('learnus_pw');
+      localStorage.removeItem('al_token');
+      localStorage.removeItem('al_id');
+      localStorage.removeItem('al_pw');
       location.reload();
     });
 
     // Auto login on page load
     window.addEventListener('load', async () => {
-      const storedToken = localStorage.getItem('learnus_token');
-      const storedId = localStorage.getItem('learnus_id');
-      const storedPw = localStorage.getItem('learnus_pw');
+      const storedToken = localStorage.getItem('al_token');
+      const storedId = localStorage.getItem('al_id');
+      const storedPw = localStorage.getItem('al_pw');
 
       if (storedToken) {
         token = storedToken;
@@ -406,7 +406,7 @@
           return;
         } catch {
           token = null;
-          localStorage.removeItem('learnus_token');
+          localStorage.removeItem('al_token');
         }
       }
 

@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
 
-app = FastAPI(title="LearnUs Calendar API")
+app = FastAPI(title="LearnUs Alimi API")
 
 # In-memory session store {token: LearnUsClient}
 _SESSIONS: Dict[str, LearnUsClient] = {}

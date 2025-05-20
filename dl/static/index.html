@@ -271,7 +271,7 @@
       const res=await fetch(path,opts);
       showLoading(false);
       if(res.status===401){
-        localStorage.removeItem('learnus_token'); token=null;
+        localStorage.removeItem('dl_token'); token=null;
         throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
       }
       if(!res.ok){ let msg='요청 실패'; try{const j=await res.json(); msg=j.detail||msg;}catch{} throw new Error(msg);} return res;
@@ -285,13 +285,13 @@
         token=data.token;
         const remember=document.getElementById('rememberMe').checked;
         if(remember){
-          localStorage.setItem('learnus_token',token);
-          localStorage.setItem('learnus_id',username.value.trim());
-          localStorage.setItem('learnus_pw',password.value);
+          localStorage.setItem('dl_token',token);
+          localStorage.setItem('dl_id',username.value.trim());
+          localStorage.setItem('dl_pw',password.value);
         }else{
-          localStorage.removeItem('learnus_token');
-          localStorage.removeItem('learnus_id');
-          localStorage.removeItem('learnus_pw');
+          localStorage.removeItem('dl_token');
+          localStorage.removeItem('dl_id');
+          localStorage.removeItem('dl_pw');
         }
         loginForm.classList.add('d-none');
         logoutBtn.classList.remove('d-none');
@@ -551,17 +551,17 @@
       try {
         await fetch('/dl/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
       } catch {}
-      localStorage.removeItem('learnus_token');
-      localStorage.removeItem('learnus_id');
-      localStorage.removeItem('learnus_pw');
+      localStorage.removeItem('dl_token');
+      localStorage.removeItem('dl_id');
+      localStorage.removeItem('dl_pw');
       location.reload();
     });
 
     // Auto-login if stored credentials
     window.addEventListener('load',async()=>{
-      const storedToken=localStorage.getItem('learnus_token');
-      const storedId=localStorage.getItem('learnus_id');
-      const storedPw=localStorage.getItem('learnus_pw');
+      const storedToken=localStorage.getItem('dl_token');
+      const storedId=localStorage.getItem('dl_id');
+      const storedPw=localStorage.getItem('dl_pw');
       if(storedToken){
         token=storedToken;
         try{
