@@ -272,7 +272,7 @@
     loginForm.addEventListener('submit',async e=>{
       e.preventDefault(); loginError.textContent='';
       try{
-        const res=await api('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username.value.trim(),password:password.value})});
+        const res=await api('/dl/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username.value.trim(),password:password.value})});
         const data=await res.json();
         token=data.token;
         const remember=document.getElementById('rememberMe').checked;
@@ -292,7 +292,7 @@
     });
 
     async function loadCourses(){
-      const courses=await (await api('/courses')).json();
+      const courses=await (await api('/dl/courses')).json();
       courseSelect.innerHTML='';
       // Placeholder option
       const placeholder=document.createElement('option');
@@ -317,7 +317,7 @@
     });
 
     async function loadVideos(courseId){
-      const {videos}=await (await api(`/videos?course_id=${courseId}`)).json();
+      const {videos}=await (await api(`/dl/videos?course_id=${courseId}`)).json();
       renderVideos(videos);
     }
 
@@ -386,7 +386,7 @@
 
       try {
         // Kick off download request
-        const res = await fetch(`/download/${id}.${ext}`, {
+        const res = await fetch(`/dl/download/${id}.${ext}`, {
           headers: {
             'X-Auth-Token': token,
           },
@@ -492,7 +492,7 @@
       const formData=new FormData(); formData.append('file', fileInput.files[0]);
 
       try{
-        const res=await fetch(`/guest/download?ext=${ext}`, {method:'POST', headers:{'X-Auth-Token': token}, body: formData});
+        const res=await fetch(`/dl/guest/download?ext=${ext}`, {method:'POST', headers:{'X-Auth-Token': token}, body: formData});
 
         if(res.status===401) throw new Error('세션 만료: 다시 로그인해 주세요.');
         if(!res.ok) throw new Error('다운로드 요청 실패');
@@ -526,7 +526,7 @@
     guestLoginBtn.addEventListener('click', async ()=>{
       loginError.textContent='';
       try{
-        const res=await fetch('/guest_login', {method:'POST'});
+        const res=await fetch('/dl/guest_login', {method:'POST'});
         const data=await res.json();
         token=data.token;
         loginForm.classList.add('d-none');
@@ -540,7 +540,7 @@
 
     logoutBtn.addEventListener('click', async () => {
       try {
-        await fetch('/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
+        await fetch('/dl/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
       } catch {}
       localStorage.removeItem('learnus_token');
       localStorage.removeItem('learnus_id');
@@ -556,14 +556,14 @@
       if(storedToken){
         token=storedToken;
         try{
-          await api('/ping');
+          await api('/dl/ping');
           loginForm.classList.add('d-none'); logoutBtn.classList.remove('d-none'); await loadCourses(); return;
         }catch{ token=null; }
       }
 
       if(storedId && storedPw){
         try{
-          const res=await api('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:storedId,password:storedPw})});
+          const res=await api('/dl/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:storedId,password:storedPw})});
           token=(await res.json()).token;
           loginForm.classList.add('d-none'); logoutBtn.classList.remove('d-none'); await loadCourses();
         }catch{}

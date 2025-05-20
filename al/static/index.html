@@ -243,7 +243,7 @@
       const password = document.getElementById('password').value;
       try {
         showLoading(true);
-        const res = await fetch('/login', {
+        const res = await fetch('/al/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
@@ -294,7 +294,7 @@
     }
 
     async function loadAllEvents() {
-      const data = await apiGet('/events');
+      const data = await apiGet('/al/events');
       renderCalendar(data.calendar);
       renderTodos(data.videos, data.assignments);
     }
@@ -374,7 +374,7 @@
 
     logoutBtn.addEventListener('click', async () => {
       try {
-        await fetch('/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
+        await fetch('/al/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
       } catch {}
       localStorage.removeItem('learnus_token');
       localStorage.removeItem('learnus_id');
@@ -391,7 +391,7 @@
       if (storedToken) {
         token = storedToken;
         try {
-          await apiGet('/ping');
+          await apiGet('/al/ping');
           loginForm.classList.add('d-none');
           await loadAllEvents();
           return;
