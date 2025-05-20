@@ -10,9 +10,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
-from session_utils import issue_token, fastapi_get_client, verify_token, get_learnus_client
 
-app = FastAPI(title="LearnUs Alimi API")
+app = FastAPI(title="LearnUs Calendar API")
+
+# In-memory session store {token: LearnUsClient}
+_SESSIONS: Dict[str, LearnUsClient] = {}
 
 # Course cache {client_id: {course_id: (last_access_time, activities)}}
 _COURSE_CACHE: Dict[int, Dict[int, Tuple[float, List]]] = {}
@@ -27,13 +29,13 @@ class LoginResponse(BaseModel):
     token: str
 
 
-# ------------------------------ Dependencies ------------------------------
-
-# Provide FastAPI dependency that returns LearnUsClient (raises 401 otherwise)
-get_client = fastapi_get_client()
-
-
 # -------------------------------- Utils ---------------------------------
+
+def get_client(x_auth_token: Optional[str] = Header(None)) -> LearnUsClient:
+    if not x_auth_token or x_auth_token not in _SESSIONS:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
+    return _SESSIONS[x_auth_token]
+
 
 def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: int = 900):
     """Return activities from cache if still fresh; otherwise fetch and update cache."""
@@ -52,7 +54,6 @@ def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: in
 
 @app.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest):
-    """Authenticate and issue signed token."""
     client = LearnUsClient()
     try:
         client.login(payload.username, payload.password)
@@ -60,10 +61,8 @@ def login(payload: LoginRequest):
         raise HTTPException(status_code=400, detail="로그인에 실패했습니다. 학번/비밀번호를 확인해주세요.")
     except Exception:
         raise HTTPException(status_code=400, detail="로그인 중 알 수 없는 오류가 발생했습니다.")
-
-    token = issue_token(payload.username, payload.password)
-    from session_utils import _CLIENT_CACHE  # type: ignore
-    _CLIENT_CACHE[token] = client
+    token = uuid.uuid4().hex
+    _SESSIONS[token] = client
     return {"token": token}
 
 
@@ -92,15 +91,15 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
         for c in client.get_courses()
     }
 
-    # Fetch each course activities sequentially to avoid thread-safety issues
+    # Parallel fetch of course activities with simple ThreadPoolExecutor
+    def fetch(cid):
+        return cid, _get_course_activities_cached(client, cid)
+
     activities_by_course: Dict[int, List] = {}
-    for cid in course_ids:
-        try:
-            activities_by_course[cid] = _get_course_activities_cached(client, cid)
-        except Exception as ex:
-            import logging
-            logging.exception("[Alimi] Failed to fetch activities for course %s: %s", cid, ex)
-            activities_by_course[cid] = []  # skip problematic course to avoid total failure
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(16, len(course_ids))) as pool:
+        for cid, acts in pool.map(fetch, course_ids):
+            activities_by_course[cid] = acts
 
     # Collect assignments that require detail fetch
     assign_need_detail: List[Tuple[int, int, object]] = []  # (course_id, module_id, activity_ref)
@@ -118,17 +117,20 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                     assign_need_detail.append((cid, a.id, a))
             # nothing else yet
 
-    # Fetch assignment details sequentially as well
-    for cid, module_id, act in assign_need_detail:
-        try:
-            detail = client.get_assignment_detail(module_id)
-        except Exception as ex:
-            import logging
-            logging.exception("[Alimi] Failed to fetch assignment detail %s: %s", module_id, ex)
-            continue
-        act.extra.update(detail)
-        if detail.get("due_time") and act.due_time is None:
-            act.due_time = detail["due_time"]
+    # Fetch assignment details in parallel
+    def fetch_assign(module_id):
+        return module_id, client.get_assignment_detail(module_id)
+
+    if assign_need_detail:
+        with ThreadPoolExecutor(max_workers=min(16, len(assign_need_detail))) as pool:
+            for module_id, detail in pool.map(lambda t: fetch_assign(t[1]), assign_need_detail):
+                # find corresponding activity object
+                for cid, mid, act in assign_need_detail:
+                    if mid == module_id:
+                        act.extra.update(detail)
+                        if detail.get("due_time") and act.due_time is None:
+                            act.due_time = detail["due_time"]
+                        break
 
     # Now build lists
     for cid in course_ids:
@@ -185,12 +187,10 @@ def ping(client: LearnUsClient = Depends(get_client)):
 # Logout: remove session & cache
 @app.post("/logout")
 def logout(x_auth_token: Optional[str] = Header(None)):
-    if not x_auth_token:
+    if not x_auth_token or x_auth_token not in _SESSIONS:
         raise HTTPException(status_code=401, detail="Invalid token")
-    from session_utils import _CLIENT_CACHE  # type: ignore
-    client = _CLIENT_CACHE.pop(x_auth_token, None)
-    if client is not None:
-        _COURSE_CACHE.pop(id(client), None)
+    client = _SESSIONS.pop(x_auth_token)
+    _COURSE_CACHE.pop(id(client), None)
     return {"ok": True}
 
 

@@ -9,9 +9,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
-from session_utils import issue_token, fastapi_get_client, get_learnus_client, verify_token
 
-app = FastAPI(title="LearnUs Downloader API")
+app = FastAPI(title="LearnUs Calendar API")
+
+# Session store now may contain either a LearnUsClient (for normal users) or None (for guest users).
+_SESSIONS: Dict[str, Optional[LearnUsClient]] = {}
 
 # Course cache {client_id: {course_id: (last_access_time, activities)}}
 _COURSE_CACHE: Dict[int, Dict[int, Tuple[float, List]]] = {}
@@ -39,15 +41,19 @@ class GuestLoginResponse(BaseModel):
 
 @app.post("/guest_login", response_model=GuestLoginResponse, summary="비회원 로그인")
 def guest_login():
-    """Issue *guest* token.  Guest sessions do **not** carry credentials."""
-    token = issue_token("guest", "", guest=True)
+    token = uuid.uuid4().hex
+    # Store a sentinel (None) so that token validation can still succeed while
+    # allowing us to distinguish guest sessions from normal ones.
+    _SESSIONS[token] = None
     return {"token": token}
 
 
 # -------------------------------- Utils ---------------------------------
 
-# FastAPI dependency that returns a logged-in client (or raises 401)
-get_client = fastapi_get_client()
+def get_client(x_auth_token: Optional[str] = Header(None)) -> LearnUsClient:
+    if not x_auth_token or x_auth_token not in _SESSIONS:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
+    return _SESSIONS[x_auth_token]
 
 
 def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: int = 900):
@@ -67,7 +73,6 @@ def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: in
 
 @app.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest):
-    """Authenticate against LearnUs and return a *signed* session token."""
     client = LearnUsClient()
     try:
         client.login(payload.username, payload.password)
@@ -75,11 +80,8 @@ def login(payload: LoginRequest):
         raise HTTPException(status_code=400, detail="로그인에 실패했습니다. 학번/비밀번호를 확인해주세요.")
     except Exception:
         raise HTTPException(status_code=400, detail="로그인 중 알 수 없는 오류가 발생했습니다.")
-
-    # Successful – issue stateless token and cache client locally for performance
-    token = issue_token(payload.username, payload.password)
-    from session_utils import _CLIENT_CACHE  # type: ignore
-    _CLIENT_CACHE[token] = client  # cache within *this* worker
+    token = uuid.uuid4().hex
+    _SESSIONS[token] = client
     return {"token": token}
 
 
@@ -97,13 +99,10 @@ def ping(client: LearnUsClient = Depends(get_client)):
 # Logout: remove session & cache
 @app.post("/logout")
 def logout(x_auth_token: Optional[str] = Header(None)):
-    """Invalidate local cache for the supplied token."""
-    if not x_auth_token:
+    if not x_auth_token or x_auth_token not in _SESSIONS:
         raise HTTPException(status_code=401, detail="Invalid token")
-    from session_utils import _CLIENT_CACHE  # type: ignore
-    client = _CLIENT_CACHE.pop(x_auth_token, None)
-    if client is not None:
-        _COURSE_CACHE.pop(id(client), None)
+    client = _SESSIONS.pop(x_auth_token)
+    _COURSE_CACHE.pop(id(client), None)
     return {"ok": True}
 
 
@@ -278,11 +277,10 @@ async def guest_download(
     session (i.e. value is None).
     """
 
-    # Basic token validation (guest only) – stateless
-    if not x_auth_token:
+    # Basic token validation (guest only)
+    if not x_auth_token or x_auth_token not in _SESSIONS:
         raise HTTPException(status_code=401, detail="Invalid or missing token")
-    payload = verify_token(x_auth_token)
-    if not payload.get("guest"):
+    if _SESSIONS[x_auth_token] is not None:
         raise HTTPException(status_code=400, detail="Not a guest session")
 
     # Read uploaded HTML
