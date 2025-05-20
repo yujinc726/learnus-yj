@@ -10,11 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
+from session_utils import issue_token, fastapi_get_client, verify_token, get_learnus_client
 
-app = FastAPI(title="LearnUs Calendar API")
-
-# In-memory session store {token: LearnUsClient}
-_SESSIONS: Dict[str, LearnUsClient] = {}
+app = FastAPI(title="LearnUs Alimi API")
 
 # Course cache {client_id: {course_id: (last_access_time, activities)}}
 _COURSE_CACHE: Dict[int, Dict[int, Tuple[float, List]]] = {}
@@ -29,13 +27,13 @@ class LoginResponse(BaseModel):
     token: str
 
 
+# ------------------------------ Dependencies ------------------------------
+
+# Provide FastAPI dependency that returns LearnUsClient (raises 401 otherwise)
+get_client = fastapi_get_client()
+
+
 # -------------------------------- Utils ---------------------------------
-
-def get_client(x_auth_token: Optional[str] = Header(None)) -> LearnUsClient:
-    if not x_auth_token or x_auth_token not in _SESSIONS:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
-    return _SESSIONS[x_auth_token]
-
 
 def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: int = 900):
     """Return activities from cache if still fresh; otherwise fetch and update cache."""
@@ -54,6 +52,7 @@ def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: in
 
 @app.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest):
+    """Authenticate and issue signed token."""
     client = LearnUsClient()
     try:
         client.login(payload.username, payload.password)
@@ -61,8 +60,10 @@ def login(payload: LoginRequest):
         raise HTTPException(status_code=400, detail="로그인에 실패했습니다. 학번/비밀번호를 확인해주세요.")
     except Exception:
         raise HTTPException(status_code=400, detail="로그인 중 알 수 없는 오류가 발생했습니다.")
-    token = uuid.uuid4().hex
-    _SESSIONS[token] = client
+
+    token = issue_token(payload.username, payload.password)
+    from session_utils import _CLIENT_CACHE  # type: ignore
+    _CLIENT_CACHE[token] = client
     return {"token": token}
 
 
@@ -187,10 +188,12 @@ def ping(client: LearnUsClient = Depends(get_client)):
 # Logout: remove session & cache
 @app.post("/logout")
 def logout(x_auth_token: Optional[str] = Header(None)):
-    if not x_auth_token or x_auth_token not in _SESSIONS:
+    if not x_auth_token:
         raise HTTPException(status_code=401, detail="Invalid token")
-    client = _SESSIONS.pop(x_auth_token)
-    _COURSE_CACHE.pop(id(client), None)
+    from session_utils import _CLIENT_CACHE  # type: ignore
+    client = _CLIENT_CACHE.pop(x_auth_token, None)
+    if client is not None:
+        _COURSE_CACHE.pop(id(client), None)
     return {"ok": True}
 
 

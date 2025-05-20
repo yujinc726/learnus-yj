@@ -4,3 +4,4 @@ pycryptodome>=3.19.1
 fastapi>=0.110.0
 uvicorn>=0.29.0
 python-multipart
+PyJWT>=2.8.0
