@@ -43,6 +43,19 @@
       line-height: 1;
     }
 
+    /* Ensure all icons take up equal vertical space */
+    .icon-wrapper {
+      height: 5.5rem; /* consistent icon area */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-wrapper img {
+      max-height: 100%;
+      width: auto;
+    }
+
     #footer {
       font-size: 0.875rem;
       color: #6c757d;
@@ -59,7 +72,7 @@
       <div class="col-12 col-sm-6 col-lg-4">
         <a href="/al/" class="text-decoration-none text-reset d-block h-100">
           <div class="tool-card h-100">
-            <div class="display-1 mb-3">📅</div>
+            <div class="icon-wrapper mb-3"><span class="display-1">📅</span></div>
             <h5 class="fw-bold mb-1">LearnUs Alimi</h5>
             <p class="text-muted small mb-0">런어스 알리미</p>
           </div>
@@ -69,8 +82,8 @@
       <div class="col-12 col-sm-6 col-lg-4">
         <a href="/dl/" class="text-decoration-none text-reset d-block h-100">
           <div class="tool-card h-100">
-            <div class="mb-3">
-              <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gVXBsb2FkZWQgdG86IFNWRyBSZXBvLCB3d3cuc3ZncmVwby5jb20sIEdlbmVyYXRvcjogU1ZHIFJlcG8gTWl4ZXIgVG9vbHMgLS0+DQo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgY2xhc3M9Imljb24iICB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTc2OCA4MTAuN2MtMjMuNiAwLTQyLjctMTkuMS00Mi43LTQyLjdzMTkuMS00Mi43IDQyLjctNDIuN2M5NC4xIDAgMTcwLjctNzYuNiAxNzAuNy0xNzAuNyAwLTg5LjYtNzAuMS0xNjQuMy0xNTkuNS0xNzAuMUw3NTQgMzgzbC0xMC43LTIyLjdjLTQyLjItODkuMy0xMzMtMTQ3LTIzMS4zLTE0N3MtMTg5LjEgNTcuNy0yMzEuMyAxNDdMMjcwIDM4M2wtMjUuMSAxLjZjLTg5LjUgNS44LTE1OS41IDgwLjUtMTU5LjUgMTcwLjEgMCA5NC4xIDc2LjYgMTcwLjcgMTcwLjcgMTcwLjcgMjMuNiAwIDQyLjcgMTkuMSA0Mi43IDQyLjdzLTE5LjEgNDIuNy00Mi43IDQyLjdjLTE0MS4yIDAtMjU2LTExNC44LTI1Ni0yNTYgMC0xMjYuMSA5Mi41LTIzMi41IDIxNC43LTI1Mi40QzI3NC44IDE5NS43IDM4OC45IDEyOCA1MTIgMTI4czIzNy4yIDY3LjcgMjk3LjMgMTc0LjJDOTMxLjUgMzIyLjEgMTAyNCA0MjguNiAxMDI0IDU1NC43YzAgMTQxLjEtMTE0LjggMjU2LTI1NiAyNTZ6IiBmaWxsPSIjMzY4OEZGIiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTEwLjkgMC0yMS44LTQuMi0zMC4yLTEyLjVsLTEyOC0xMjhjLTE2LjctMTYuNy0xNi43LTQzLjcgMC02MC4zIDE2LjYtMTYuNyA0My43LTE2LjcgNjAuMyAwbDk3LjggOTcuOCA5Ny44LTk3LjhjMTYuNi0xNi43IDQzLjctMTYuNyA2MC4zIDAgMTYuNyAxNi43IDE2LjcgNDMuNyAwIDYwLjNsLTEyOCAxMjhjLTguMiA4LjMtMTkuMSAxMi41LTMwIDEyLjV6IiBmaWxsPSIjNUY2Mzc5IiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTIzLjYgMC00Mi43LTE5LjEtNDIuNy00Mi43VjU5Ny4zYzAtMjMuNiAxOS4xLTQyLjcgNDIuNy00Mi43czQyLjcgMTkuMSA0Mi43IDQyLjdWODk2YzAgMjMuNi0xOS4xIDQyLjctNDIuNyA0Mi43eiIgZmlsbD0iIzVGNjM3OSIgLz48L3N2Zz4=" alt="다운로드 아이콘" width="90" height="90" />
+            <div class="icon-wrapper mb-3">
+              <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gVXBsb2FkZWQgdG86IFNWRyBSZXBvLCB3d3cuc3ZncmVwby5jb20sIEdlbmVyYXRvcjogU1ZHIFJlcG8gTWl4ZXIgVG9vbHMgLS0+DQo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgY2xhc3M9Imljb24iICB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTc2OCA4MTAuN2MtMjMuNiAwLTQyLjctMTkuMS00Mi43LTQyLjdzMTkuMS00Mi43IDQyLjctNDIuN2M5NC4xIDAgMTcwLjctNzYuNiAxNzAuNy0xNzAuNyAwLTg5LjYtNzAuMS0xNjQuMy0xNTkuNS0xNzAuMUw3NTQgMzgzbC0xMC43LTIyLjdjLTQyLjItODkuMy0xMzMtMTQ3LTIzMS4zLTE0N3MtMTg5LjEgNTcuNy0yMzEuMyAxNDdMMjcwIDM4M2wtMjUuMSAxLjZjLTg5LjUgNS44LTE1OS41IDgwLjUtMTU5LjUgMTcwLjEgMCA5NC4xIDc2LjYgMTcwLjcgMTcwLjcgMTcwLjcgMjMuNiAwIDQyLjcgMTkuMSA0Mi43IDQyLjdzLTE5LjEgNDIuNy00Mi43IDQyLjdjLTE0MS4yIDAtMjU2LTExNC44LTI1Ni0yNTYgMC0xMjYuMSA5Mi41LTIzMi41IDIxNC43LTI1Mi40QzI3NC44IDE5NS43IDM4OC45IDEyOCA1MTIgMTI4czIzNy4yIDY3LjcgMjk3LjMgMTc0LjJDOTMxLjUgMzIyLjEgMTAyNCA0MjguNiAxMDI0IDU1NC43YzAgMTQxLjEtMTE0LjggMjU2LTI1NiAyNTZ6IiBmaWxsPSIjMzY4OEZGIiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTEwLjkgMC0yMS44LTQuMi0zMC4yLTEyLjVsLTEyOC0xMjhjLTE2LjctMTYuNy0xNi43LTQzLjcgMC02MC4zIDE2LjYtMTYuNyA0My43LTE2LjcgNjAuMyAwbDk3LjggOTcuOCA5Ny44LTk3LjhjMTYuNi0xNi43IDQzLjctMTYuNyA2MC4zIDAgMTYuNyAxNi43IDE2LjcgNDMuNyAwIDYwLjNsLTEyOCAxMjhjLTguMiA4LjMtMTkuMSAxMi41LTMwIDEyLjV6IiBmaWxsPSIjNUY2Mzc5IiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTIzLjYgMC00Mi43LTE5LjEtNDIuNy00Mi43VjU5Ny4zYzAtMjMuNiAxOS4xLTQyLjcgNDIuNy00Mi43czQyLjcgMTkuMSA0Mi43IDQyLjdWODk2YzAgMjMuNi0xOS4xIDQyLjctNDIuNyA0Mi43eiIgZmlsbD0iIzVGNjM3OSIgLz48L3N2Zz4=" alt="다운로드 아이콘" width="80" height="80" />
             </div>
             <h5 class="fw-bold mb-1">LearnUs Downloader</h5>
             <p class="text-muted small mb-0">동영상 강의 저장</p>
@@ -81,7 +94,7 @@
       <div class="col-12 col-sm-6 col-lg-4">
         <a href="https://slide-scribe.app" rel="noopener" class="text-decoration-none text-reset d-block h-100">
           <div class="tool-card h-100">
-            <div class="display-1 mb-3">📝</div>
+            <div class="icon-wrapper mb-3"><span class="display-1">📝</span></div>
             <h5 class="fw-bold mb-1">Slide-Scribe</h5>
             <p class="text-muted small mb-0">슬라이드별 강의의 정리</p>
           </div>
