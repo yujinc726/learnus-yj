@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CN2LCBZ411"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-CN2LCBZ411');
+  </script>
+  <title>LearnUs Downloader</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gVXBsb2FkZWQgdG86IFNWRyBSZXBvLCB3d3cuc3ZncmVwby5jb20sIEdlbmVyYXRvcjogU1ZHIFJlcG8gTWl4ZXIgVG9vbHMgLS0+DQo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgY2xhc3M9Imljb24iICB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTc2OCA4MTAuN2MtMjMuNiAwLTQyLjctMTkuMS00Mi43LTQyLjdzMTkuMS00Mi43IDQyLjctNDIuN2M5NC4xIDAgMTcwLjctNzYuNiAxNzAuNy0xNzAuNyAwLTg5LjYtNzAuMS0xNjQuMy0xNTkuNS0xNzAuMUw3NTQgMzgzbC0xMC43LTIyLjdjLTQyLjItODkuMy0xMzMtMTQ3LTIzMS4zLTE0N3MtMTg5LjEgNTcuNy0yMzEuMyAxNDdMMjcwIDM4M2wtMjUuMSAxLjZjLTg5LjUgNS44LTE1OS41IDgwLjUtMTU5LjUgMTcwLjEgMCA5NC4xIDc2LjYgMTcwLjcgMTcwLjcgMTcwLjcgMjMuNiAwIDQyLjcgMTkuMSA0Mi43IDQyLjdzLTE5LjEgNDIuNy00Mi43IDQyLjdjLTE0MS4yIDAtMjU2LTExNC44LTI1Ni0yNTYgMC0xMjYuMSA5Mi41LTIzMi41IDIxNC43LTI1Mi40QzI3NC44IDE5NS43IDM4OC45IDEyOCA1MTIgMTI4czIzNy4yIDY3LjcgMjk3LjMgMTc0LjJDOTMxLjUgMzIyLjEgMTAyNCA0MjguNiAxMDI0IDU1NC43YzAgMTQxLjEtMTE0LjggMjU2LTI1NiAyNTZ6IiBmaWxsPSIjMzY4OEZGIiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTEwLjkgMC0yMS44LTQuMi0zMC4yLTEyLjVsLTEyOC0xMjhjLTE2LjctMTYuNy0xNi43LTQzLjcgMC02MC4zIDE2LjYtMTYuNyA0My43LTE2LjcgNjAuMyAwbDk3LjggOTcuOCA5Ny44LTk3LjhjMTYuNi0xNi43IDQzLjctMTYuNyA2MC4zIDAgMTYuNyAxNi43IDE2LjcgNDMuNyAwIDYwLjNsLTEyOCAxMjhjLTguMiA4LjMtMTkuMSAxMi41LTMwIDEyLjV6IiBmaWxsPSIjNUY2Mzc5IiAvPjxwYXRoIGQ9Ik01MTIgOTM4LjdjLTIzLjYgMC00Mi43LTE5LjEtNDIuNy00Mi43VjU5Ny4zYzAtMjMuNiAxOS4xLTQyLjcgNDIuNy00Mi43czQyLjcgMTkuMSA0Mi43IDQyLjdWODk2YzAgMjMuNi0xOS4xIDQyLjctNDIuNyA0Mi43eiIgZmlsbD0iIzVGNjM3OSIgLz48L3N2Zz4=" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* --primary-gradient-start: #4e54c8;
+      --primary-gradient-end: #8f94fb; */
+      --primary-gradient-start: #0093E9 ;
+      --primary-gradient-end: #80D0C7;
+    }
+
+    body {
+      background: linear-gradient(135deg, #eef2ff 0%, #fafcff 100%);
+      font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+    }
+
+    h1 {
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      max-width: 900px;
+      margin: 0 auto 1.5rem auto;
+      padding-left: 0.75rem; /* slight indent */
+    }
+
+    /* Login card */
+    #login-form {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    /* Login form elements */
+    #login-form .input-group-text {
+      background: transparent;
+      border-right: 0;
+    }
+
+    #login-form .form-control {
+      border-left: 0;
+      box-shadow: none !important;
+    }
+
+    #login-form .btn-primary {
+      background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+      border: none;
+      font-weight: 600;
+    }
+
+    #login-form .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* Footer */
+    #footer {
+      font-size: 0.875rem;
+      color: #6c757d;
+      text-align: center;
+      margin: 1rem auto 1rem;
+      max-width: 900px;
+    }
+
+    /* Course selector & Video wrapper */
+    #course-section,
+    #video-section {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Course selector card style */
+    #course-section {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #course-section .input-group-text {
+      background: linear-gradient(90deg,var(--primary-gradient-start),var(--primary-gradient-end));
+      color:#fff;
+      font-weight:600;
+      border:none;
+    }
+
+    /* video list wrapper spacing */
+    #video-section {
+      padding: 0;
+    }
+
+    /* List styling for video section matching original */
+    #video-section .col-12 {
+      margin-bottom: 3.5rem; /* same gap as before */
+    }
+
+    #video-section h4 {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    #video-section ul.list-group {
+      border: 0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+    }
+
+    /* Download button subtle style */
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .video-progress {
+      width: 100%;
+      height: 6px;
+      margin-top: 6px;
+    }
+
+    #subtitle {
+      max-width: 900px;
+      margin: -1rem auto 2rem auto; /* slight pull-up to close gap, then bottom space */
+      padding-left: 0.75rem;
+    }
+
+    /* Logout button hover and disabled styles */
+    #logoutBtn {
+      transition: background-color 0.15s ease;
+    }
+
+    #logoutBtn:hover,
+    #logoutBtn:focus {
+      background-color: rgba(0, 0, 0, 0.05); /* subtle darkening */
+    }
+
+    #logoutBtn.disabled,
+    #logoutBtn:disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* Guest upload card (same look as login) */
+    #guest-section {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    #loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1050;
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body class="py-4">
+  <h1 class="mb-4 d-flex justify-content-between align-items-center">LearnUs Downloader
+    <button id="logoutBtn" class="btn btn-outline-secondary btn-sm d-none"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Logout</button></h1>
+  <p id="subtitle" class="mb-4 text-muted">Developed by 차유진</p>
+
+  <!-- Login form -->
+  <form id="login-form" class="mb-4">
+    <h4 class="mb-3">LearnUs Login</h4>
+    <div class="input-group mb-3"><span class="input-group-text"><i class="fa-solid fa-user"></i></span><input type="text" id="username" class="form-control" placeholder="Student ID" required /></div>
+    <div class="input-group mb-3"><span class="input-group-text"><i class="fa-solid fa-lock"></i></span><input type="password" id="password" class="form-control" placeholder="Password" required /></div>
+    <div class="col-12 form-check mb-2"><input class="form-check-input" type="checkbox" id="rememberMe"><label class="form-check-label" for="rememberMe">자동 로그인</label></div>
+    <div class="col-12 mt-3"><button type="submit" class="btn btn-primary w-100">Login</button></div>
+    <!-- Guest login -->
+    <div class="col-12 mt-2"><button type="button" id="guestLoginBtn" class="btn btn-outline-secondary w-100">비회원 모드 (HTML 업로드)</button></div>
+    <div id="login-error" class="text-danger mt-2 text-center"></div>
+  </form>
+
+  <!-- Course selector (added) -->
+  <div id="course-section" class="d-none mb-4">
+    <div class="input-group">
+      <span class="input-group-text"><i class="fa-solid fa-book-open me-1"></i> 강의 선택</span>
+      <select id="course-select" class="form-select"></select>
+    </div>
+  </div>
+
+  <!-- Todo Lists -->
+  <div id="video-section" class="d-none row g-4 mt-3">
+    <div class="col-12 mb-3">
+      <h4>동영상 강의 목록</h4>
+      <ul id="video-list" class="list-group"></ul>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;"></div>
+      <p class="mt-3 fw-bold">로딩 중...</p>
+    </div>
+  </div>
+
+  <!-- Guest HTML upload / download -->
+  <!-- Placed right after login card for consistent flow -->
+  <div id="guest-section" class="d-none mb-4">
+    <h4 class="mb-3">HTML 업로드</h4>
+    <input type="file" id="htmlFile" accept=".html,.htm,text/html" class="form-control mb-3" />
+    <div class="d-flex gap-2">
+      <button id="guestMp4Btn" class="btn btn-outline-primary flex-fill"><i class="fa-solid fa-download me-1"></i>MP4</button>
+      <button id="guestMp3Btn" class="btn btn-outline-secondary flex-fill"><i class="fa-solid fa-music me-1"></i>MP3</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer" class="text-muted small">
+    <p class="mb-1">본 프로그램은 개인적인 학습 용도로만 사용되어야 하며, 다운로드 받은 콘텐츠를 무단으로 복제·배포·공유할 경우 관련 법령에 따라 처벌될 수 있습니다.</p>
+    <p class="mb-1">Email: <a href="mailto:yujinc726@yonsei.ac.kr">yujinc726@yonsei.ac.kr</a></p>
+    <p class="mb-1">Copyright © 2025 Yujin Cha. All Rights Reserved.</p>
+    <p class="mb-0">대기과학과 화이팅!</p>
+  </footer>
+
+  <script>
+    const loginForm=document.getElementById('login-form');
+    const loginError=document.getElementById('login-error');
+    const loadingOverlay=document.getElementById('loading-overlay');
+    const logoutBtn=document.getElementById('logoutBtn');
+    const courseSection=document.getElementById('course-section');
+    const courseSelect=document.getElementById('course-select');
+    const videoSection=document.getElementById('video-section');
+    const videoList=document.getElementById('video-list');
+    const guestSection=document.getElementById('guest-section');
+    const guestLoginBtn=document.getElementById('guestLoginBtn');
+    const guestMp4Btn=document.getElementById('guestMp4Btn');
+    const guestMp3Btn=document.getElementById('guestMp3Btn');
+    let token=null;
+
+    function showLoading(show){ loadingOverlay.style.visibility=show?'visible':'hidden'; }
+    async function api(path,opts={}){
+      showLoading(true);
+      opts.headers=opts.headers||{};
+      if(token) opts.headers['X-Auth-Token']=token;
+      const res=await fetch(path,opts);
+      showLoading(false);
+      if(res.status===401){
+        localStorage.removeItem('learnus_token'); token=null;
+        throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+      }
+      if(!res.ok){ let msg='요청 실패'; try{const j=await res.json(); msg=j.detail||msg;}catch{} throw new Error(msg);} return res;
+    }
+
+    loginForm.addEventListener('submit',async e=>{
+      e.preventDefault(); loginError.textContent='';
+      try{
+        const res=await api('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:username.value.trim(),password:password.value})});
+        const data=await res.json();
+        token=data.token;
+        const remember=document.getElementById('rememberMe').checked;
+        if(remember){
+          localStorage.setItem('learnus_token',token);
+          localStorage.setItem('learnus_id',username.value.trim());
+          localStorage.setItem('learnus_pw',password.value);
+        }else{
+          localStorage.removeItem('learnus_token');
+          localStorage.removeItem('learnus_id');
+          localStorage.removeItem('learnus_pw');
+        }
+        loginForm.classList.add('d-none');
+        logoutBtn.classList.remove('d-none');
+        await loadCourses();
+      }catch(err){ loginError.textContent=err.message||'Login failed'; }
+    });
+
+    async function loadCourses(){
+      const courses=await (await api('/courses')).json();
+      courseSelect.innerHTML='';
+      // Placeholder option
+      const placeholder=document.createElement('option');
+      placeholder.textContent='강의를 선택해주세요';
+      placeholder.disabled=true;
+      placeholder.selected=true;
+      placeholder.value='';
+      courseSelect.appendChild(placeholder);
+
+      courses.forEach(c=>{
+        const o=document.createElement('option');
+        o.value=c.id; o.textContent=c.name; courseSelect.appendChild(o);
+      });
+
+      if(courses.length){ courseSection.classList.remove('d-none'); }
+    }
+
+    courseSelect.addEventListener('change',()=>{
+      if(courseSelect.value){
+        loadVideos(courseSelect.value);
+      }
+    });
+
+    async function loadVideos(courseId){
+      const {videos}=await (await api(`/videos?course_id=${courseId}`)).json();
+      renderVideos(videos);
+    }
+
+    function renderVideos(videos){
+      videoList.innerHTML = videos.length ? '' : '<li class="list-group-item">동영상이 없습니다.</li>';
+      videos.forEach(v=>{
+        const li=document.createElement('li');
+        li.className='list-group-item d-flex justify-content-between align-items-center flex-wrap';
+        const titleSpan=document.createElement('span'); titleSpan.textContent=v.title; li.appendChild(titleSpan);
+        const btnGroup=document.createElement('div'); btnGroup.className='btn-group btn-group-sm';
+        const mp4Btn=document.createElement('button');
+        mp4Btn.className='btn btn-outline-primary btn-sm download-btn';
+        mp4Btn.innerHTML='<i class="fa-solid fa-download"></i> MP4';
+        if (v.available !== false) {
+          mp4Btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            download(v.id, 'mp4', v.title, li, e.currentTarget);
+          });
+        } else {
+          mp4Btn.disabled = true;
+          mp4Btn.classList.add('disabled');
+        }
+
+        const mp3Btn=document.createElement('button');
+        mp3Btn.className='btn btn-outline-secondary btn-sm download-btn';
+        mp3Btn.innerHTML='<i class="fa-solid fa-music"></i> MP3';
+        if (v.available !== false) {
+          mp3Btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            download(v.id, 'mp3', v.title, li, e.currentTarget);
+          });
+        } else {
+          mp3Btn.disabled = true;
+          mp3Btn.classList.add('disabled');
+        }
+        btnGroup.appendChild(mp4Btn); btnGroup.appendChild(mp3Btn);
+        li.appendChild(btnGroup);
+        videoList.appendChild(li);
+      });
+      videoSection.classList.remove('d-none');
+    }
+
+    // Completely rewritten download routine
+    async function download(id, ext, title, li, btn) {
+      // Guard: ignore if a download on this button is already running
+      if (btn && btn.dataset.downloading === '1') {
+        return;
+      }
+
+      // Mark button as busy (visual + logical)
+      if (btn) {
+        btn.dataset.downloading = '1';
+        btn.classList.add('disabled');
+      }
+
+      // Show spinner on the clicked button to indicate download in progress
+      let originalHTML = '';
+      if (btn) {
+        originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+      }
+
+      // Stub progress objects to keep rest of logic intact without errors
+      const progressWrapper = { remove: () => {} };
+      const progressBar = { classList: { add: () => {}, remove: () => {} }, style: { width: '' }, textContent: '' };
+
+      try {
+        // Kick off download request
+        const res = await fetch(`/download/${id}.${ext}`, {
+          headers: {
+            'X-Auth-Token': token,
+          },
+          cache: 'no-store',
+        });
+
+        if (res.status === 401) {
+          throw new Error('세션 만료: 다시 로그인해 주세요.');
+        }
+        if (!res.ok) {
+          throw new Error('다운로드 요청 실패');
+        }
+
+        // Try to obtain total size for progress feedback
+        let total = Number(res.headers.get('Content-Length')) || 0;
+
+        // Fallback: if Content-Length is not provided, estimate it using duration * bitrate
+        if (!total) {
+          const durationSec = Number(res.headers.get('X-Stream-Duration')) || 0; // seconds
+          const bitrateBps = Number(res.headers.get('X-Stream-Bitrate')) || 0;   // bits per second
+          if (durationSec && bitrateBps) {
+            total = Math.floor((bitrateBps / 8) * durationSec); // convert bits to bytes
+          }
+        }
+
+        const unknownTotal = !total;
+
+        // Stream reader (supported browsers)
+        const reader = res.body?.getReader();
+        const chunks = [];
+        let received = 0;
+
+        if (unknownTotal) {
+          // Indeterminate progress: show animated striped bar
+          progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
+          progressBar.style.width = '100%';
+          progressBar.textContent = '';
+        }
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+
+            if (!unknownTotal) {
+              const pct = Math.floor((received / total) * 100);
+              progressBar.style.width = `${pct}%`;
+              progressBar.textContent = `${pct}%`;
+            }
+          }
+        } else {
+          // Fallback: not stream-capable browser
+          chunks.push(new Uint8Array(await res.arrayBuffer()));
+        }
+
+        const blob = new Blob(chunks, {
+          type: ext === 'mp4' ? 'video/mp4' : 'audio/mpeg',
+        });
+
+        if (!blob.size) {
+          throw new Error('0바이트 파일이 수신되었습니다.');
+        }
+
+        // Mark completion visually
+        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+        progressBar.style.width = '100%';
+        progressBar.textContent = '완료';
+
+        // Trigger file save (single click)
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${title}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // Cleanup after some time
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      } catch (err) {
+        alert(err?.message || err || '알 수 없는 오류');
+      } finally {
+        progressWrapper.remove();
+        if (btn) {
+          delete btn.dataset.downloading;
+          btn.classList.remove('disabled');
+          if (originalHTML) {
+            btn.innerHTML = originalHTML;
+          }
+        }
+      }
+    }
+
+    // Guest download routine using uploaded HTML file
+    async function guestDownload(ext, btn){
+      if(btn && btn.dataset.downloading==='1') return;
+      const fileInput=document.getElementById('htmlFile');
+      if(!fileInput.files.length){ alert('HTML 파일을 먼저 선택하세요.'); return; }
+
+      if(btn){ btn.dataset.downloading='1'; btn.classList.add('disabled'); var originalHTML=btn.innerHTML; btn.innerHTML='<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'; }
+
+      const formData=new FormData(); formData.append('file', fileInput.files[0]);
+
+      try{
+        const res=await fetch(`/guest/download?ext=${ext}`, {method:'POST', headers:{'X-Auth-Token': token}, body: formData});
+
+        if(res.status===401) throw new Error('세션 만료: 다시 로그인해 주세요.');
+        if(!res.ok) throw new Error('다운로드 요청 실패');
+
+        const contentDisp=res.headers.get('Content-Disposition')||'';
+        let filename='download.'+ext;
+        const m=contentDisp.match(/filename\*=UTF-8''([^;]+)/);
+        if(m) filename=decodeURIComponent(m[1]);
+
+        const total=Number(res.headers.get('Content-Length'))||0;
+        const unknownTotal=!total;
+
+        const reader=res.body?.getReader();
+        const chunks=[]; let received=0;
+
+        while(true){ const {done,value}=await reader.read(); if(done) break; chunks.push(value); received+=value.length; }
+
+        const blob=new Blob(chunks,{type: ext==='mp4'?'video/mp4':'audio/mpeg'});
+        if(!blob.size) throw new Error('0바이트 파일이 수신되었습니다.');
+
+        const blobUrl=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=blobUrl; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
+      }catch(err){ alert(err?.message||err||'알 수 없는 오류'); }
+      finally{
+        if(btn){ delete btn.dataset.downloading; btn.classList.remove('disabled'); btn.innerHTML=originalHTML; }
+      }
+    }
+
+    // Event bindings for guest logic
+    guestLoginBtn.addEventListener('click', async ()=>{
+      loginError.textContent='';
+      try{
+        const res=await fetch('/guest_login', {method:'POST'});
+        const data=await res.json();
+        token=data.token;
+        loginForm.classList.add('d-none');
+        logoutBtn.classList.remove('d-none');
+        guestSection.classList.remove('d-none');
+      }catch(err){ loginError.textContent=err.message||'Guest login failed'; }
+    });
+
+    guestMp4Btn.addEventListener('click', (e)=>{ e.preventDefault(); guestDownload('mp4', e.currentTarget); });
+    guestMp3Btn.addEventListener('click', (e)=>{ e.preventDefault(); guestDownload('mp3', e.currentTarget); });
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
+      } catch {}
+      localStorage.removeItem('learnus_token');
+      localStorage.removeItem('learnus_id');
+      localStorage.removeItem('learnus_pw');
+      location.reload();
+    });
+
+    // Auto-login if stored credentials
+    window.addEventListener('load',async()=>{
+      const storedToken=localStorage.getItem('learnus_token');
+      const storedId=localStorage.getItem('learnus_id');
+      const storedPw=localStorage.getItem('learnus_pw');
+      if(storedToken){
+        token=storedToken;
+        try{
+          await api('/ping');
+          loginForm.classList.add('d-none'); logoutBtn.classList.remove('d-none'); await loadCourses(); return;
+        }catch{ token=null; }
+      }
+
+      if(storedId && storedPw){
+        try{
+          const res=await api('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:storedId,password:storedPw})});
+          token=(await res.json()).token;
+          loginForm.classList.add('d-none'); logoutBtn.classList.remove('d-none'); await loadCourses();
+        }catch{}
+      }
+    });
+  </script>
+</body>
+</html> 
