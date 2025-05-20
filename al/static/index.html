@@ -275,6 +275,7 @@
           localStorage.removeItem('al_pw');
         }
         loginForm.classList.add('d-none');
+        logoutBtn.classList.remove('d-none');
         homeBtn.classList.remove('d-none');
         await loadAllEvents();
       } catch (err) {
@@ -401,6 +402,7 @@
         try {
           await apiGet('/al/ping');
           loginForm.classList.add('d-none');
+          logoutBtn.classList.remove('d-none');
           homeBtn.classList.remove('d-none');
           await loadAllEvents();
           return;
