@@ -440,7 +440,7 @@
             const vw = window.innerWidth;
             // If component spills past the right edge, shift it leftwards
             if (rect.right > vw) {
-              const shift = rect.right - vw + 12; // increased margin
+              const shift = rect.right - vw + 16;
               info.el.style.position = 'relative';
               info.el.style.left = `-${shift}px`;
             }
