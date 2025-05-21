@@ -382,13 +382,13 @@
       videoList.innerHTML = videos.length ? '' : '<li class="list-group-item">모두 완료!</li>';
       videos.forEach(v => {
         const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.className = 'list-group-item d-flex align-items-center';
         const a = document.createElement('a');
         a.href = `https://ys.learnus.org/mod/vod/viewer.php?id=${v.id}`;
         a.target = '_blank';
         a.rel = 'noopener';
         a.textContent = v.title;
-        a.className = 'text-decoration-none';
+        a.className = 'text-decoration-none flex-grow-1';
         a.addEventListener('click', (e) => {
           e.preventDefault();
           window.open(a.href, '_blank', 'noopener,width=1200,height=800');
@@ -403,7 +403,7 @@
         remainBadge.dataset.due = v.due;
 
         const rightBox = document.createElement('div');
-        rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+        rightBox.className = 'd-flex align-items-center gap-2';
         rightBox.appendChild(remainBadge);
         rightBox.appendChild(dueBadge);
         li.appendChild(rightBox);
@@ -414,13 +414,13 @@
       assignList.innerHTML = assigns.length ? '' : '<li class="list-group-item">모두 완료!</li>';
       assigns.forEach(a => {
         const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.className = 'list-group-item d-flex align-items-center';
         const link = document.createElement('a');
         link.href = `https://ys.learnus.org/mod/assign/view.php?id=${a.id}`;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.textContent = a.title;
-        link.className = 'text-decoration-none';
+        link.className = 'text-decoration-none flex-grow-1';
         li.appendChild(link);
         const dueBadge = document.createElement('span');
         dueBadge.className = 'badge bg-danger rounded-pill';
@@ -431,7 +431,7 @@
         remainBadge.dataset.due = a.due;
 
         const rightBox = document.createElement('div');
-        rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+        rightBox.className = 'd-flex align-items-center gap-2';
         rightBox.appendChild(remainBadge);
         rightBox.appendChild(dueBadge);
         li.appendChild(rightBox);
