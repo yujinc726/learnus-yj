@@ -148,7 +148,7 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
         activities = activities_by_course[cid]
 
         for a in activities:
-            full_title = f"{course_name_map.get(cid, '')}| {a.title}"
+            full_title = f"[{course_name_map.get(cid, '')}] {a.title}"
 
             if a.type == "assign":
                 # Re-evaluate after details
