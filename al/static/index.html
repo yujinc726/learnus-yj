@@ -188,8 +188,11 @@
     .fc-daygrid-event.fc-h-event:hover,
     .fc-daygrid-event:hover {
       white-space: normal !important; /* allow wrapping */
-      width: max-content;            /* fit content width */
-      max-width: none;               /* remove width cap */
+      max-width: 80vw;               /* cap width to viewport */
+      width: auto;                   /* let it shrink if needed */
+      overflow-wrap: break-word;     /* wrap long words */
+      word-break: break-word;        /* aggressive wrap for long strings */
+      padding-right: 0.5rem;         /* some breathing room */
       z-index: 1000;                 /* bring to front */
     }
 
@@ -440,7 +443,7 @@
             const vw = window.innerWidth;
             // If component spills past the right edge, shift it leftwards
             if (rect.right > vw) {
-              const shift = rect.right - vw + 16;
+              const shift = rect.right - vw + 4;
               info.el.style.position = 'relative';
               info.el.style.left = `-${shift}px`;
             }
