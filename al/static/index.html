@@ -179,6 +179,20 @@
       opacity: 0.6;
       pointer-events: none;
     }
+
+    /* ----- FullCalendar badge hover expansion ----- */
+    .fc-daygrid-event-harness:hover {
+      overflow: visible; /* allow badge to extend outside cell */
+    }
+
+    .fc-daygrid-event.fc-h-event:hover,
+    .fc-daygrid-event:hover {
+      white-space: normal !important; /* allow wrapping */
+      width: max-content;            /* fit content width */
+      max-width: none;               /* remove width cap */
+      z-index: 1000;                 /* bring to front */
+    }
+    /* --------------------------------------------- */
   </style>
 </head>
 <body class="py-4">
