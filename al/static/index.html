@@ -207,7 +207,7 @@
     <div class="col-12 mt-3">
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </div>
-    <div id="login-error" class="text-danger mt-2ㅛㅛ text-center"></div>
+    <div id="login-error" class="text-danger mt-2 text-center"></div>
   </form>
 
   <!-- Todo Lists -->
@@ -276,6 +276,14 @@
         if (!dueStr) return;
         const dueDate = new Date(dueStr);
         el.textContent = formatRemainingTime(dueDate);
+
+        // Highlight in red when less than 1 day remaining
+        const diffMs = dueDate - new Date();
+        if (diffMs > 0 && diffMs < 86400000) {
+          el.classList.add('text-danger');
+        } else {
+          el.classList.remove('text-danger');
+        }
       });
     }
 
