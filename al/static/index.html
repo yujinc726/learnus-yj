@@ -108,6 +108,13 @@
       margin-bottom: 3.5rem; /* increased gap */
     }
 
+    /* Remaining time badge */
+    .remaining-time {
+      background: #f1f3f5 !important;
+      color: #495057 !important;
+      font-weight: 600;
+    }
+
     #todo-section h4 {
       font-weight: 600;
       margin-bottom: 0.75rem;
@@ -390,12 +397,16 @@
         const dueBadge = document.createElement('span');
         dueBadge.className = 'badge bg-primary rounded-pill';
         dueBadge.textContent = new Date(v.due).toLocaleString('ko-KR');
-        li.appendChild(dueBadge);
 
         const remainBadge = document.createElement('span');
-        remainBadge.className = 'badge bg-light text-dark rounded-pill remaining-time ms-2';
+        remainBadge.className = 'badge rounded-pill remaining-time';
         remainBadge.dataset.due = v.due;
-        li.appendChild(remainBadge);
+
+        const rightBox = document.createElement('div');
+        rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+        rightBox.appendChild(dueBadge);
+        rightBox.appendChild(remainBadge);
+        li.appendChild(rightBox);
 
         videoList.appendChild(li);
       });
@@ -414,12 +425,16 @@
         const dueBadge = document.createElement('span');
         dueBadge.className = 'badge bg-danger rounded-pill';
         dueBadge.textContent = new Date(a.due).toLocaleString('ko-KR');
-        li.appendChild(dueBadge);
 
         const remainBadge = document.createElement('span');
-        remainBadge.className = 'badge bg-light text-dark rounded-pill remaining-time ms-2';
+        remainBadge.className = 'badge rounded-pill remaining-time';
         remainBadge.dataset.due = a.due;
-        li.appendChild(remainBadge);
+
+        const rightBox = document.createElement('div');
+        rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+        rightBox.appendChild(dueBadge);
+        rightBox.appendChild(remainBadge);
+        li.appendChild(rightBox);
 
         assignList.appendChild(li);
       });
