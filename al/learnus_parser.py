@@ -4,8 +4,8 @@ import re
 import datetime as dt
 from dataclasses import dataclass, field
 from typing import List, Optional
-
 from bs4 import BeautifulSoup
+from zoneinfo import ZoneInfo
 
 __all__ = [
     "Activity",
@@ -41,11 +41,13 @@ _DATETIME_PATTERNS = [
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d %H:%M",
 ]
+# Korea Standard Time
+KST = ZoneInfo("Asia/Seoul")
 
 def _parse_datetime(ts: str) -> dt.datetime:
     for fmt in _DATETIME_PATTERNS:
         try:
-            return dt.datetime.strptime(ts, fmt)
+            return dt.datetime.strptime(ts, fmt).replace(tzinfo=KST)
         except ValueError:
             continue
     raise ValueError(f"Unrecognised datetime format: {ts}")
@@ -192,6 +194,6 @@ def parse_dashboard_courses(html: str) -> List[dict]:
     for opt in select.find_all("option"):
         value = opt.get("value", "").strip()
         if not value.isdigit():
-            continue  # skip placeholder '강좌를 선택하세요.' etc.
+            continue
         courses.append({"id": int(value), "name": opt.get_text(strip=True)})
     return courses 
