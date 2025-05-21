@@ -238,6 +238,39 @@
     const homeBtn = document.getElementById('homeBtn');
     let token = null;
     let calendar = null;
+    let remainingInterval = null;
+
+    function formatRemainingTime(dueDate) {
+      const now = new Date();
+      let diffMs = dueDate - now;
+      if (diffMs <= 0) return '마감됨';
+
+      const mins = Math.floor(diffMs / 60000);
+      const days = Math.floor(mins / 1440);
+      const hours = Math.floor((mins % 1440) / 60);
+      const minutes = mins % 60;
+
+      const parts = [];
+      if (days) parts.push(`${days}일`);
+      if (hours) parts.push(`${hours}시간`);
+      if (days === 0 && minutes) parts.push(`${minutes}분`);
+      return parts.join(' ') + ' 남음';
+    }
+
+    function updateRemainingTimes() {
+      document.querySelectorAll('.remaining-time').forEach(el => {
+        const dueStr = el.dataset.due;
+        if (!dueStr) return;
+        const dueDate = new Date(dueStr);
+        el.textContent = formatRemainingTime(dueDate);
+      });
+    }
+
+    function startRemainingUpdater() {
+      updateRemainingTimes();
+      if (remainingInterval) clearInterval(remainingInterval);
+      remainingInterval = setInterval(updateRemainingTimes, 60000); // update every minute
+    }
 
     function showLoading(show) {
       document.getElementById('loading-overlay').style.visibility = show ? 'visible' : 'hidden';
@@ -354,10 +387,16 @@
           window.open(a.href, '_blank', 'noopener,width=1200,height=800');
         });
         li.appendChild(a);
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-primary rounded-pill';
-        badge.textContent = new Date(v.due).toLocaleString('ko-KR');
-        li.appendChild(badge);
+        const dueBadge = document.createElement('span');
+        dueBadge.className = 'badge bg-primary rounded-pill';
+        dueBadge.textContent = new Date(v.due).toLocaleString('ko-KR');
+        li.appendChild(dueBadge);
+
+        const remainBadge = document.createElement('span');
+        remainBadge.className = 'badge bg-light text-dark rounded-pill remaining-time ms-2';
+        remainBadge.dataset.due = v.due;
+        li.appendChild(remainBadge);
+
         videoList.appendChild(li);
       });
 
@@ -372,14 +411,22 @@
         link.textContent = a.title;
         link.className = 'text-decoration-none';
         li.appendChild(link);
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-danger rounded-pill';
-        badge.textContent = new Date(a.due).toLocaleString('ko-KR');
-        li.appendChild(badge);
+        const dueBadge = document.createElement('span');
+        dueBadge.className = 'badge bg-danger rounded-pill';
+        dueBadge.textContent = new Date(a.due).toLocaleString('ko-KR');
+        li.appendChild(dueBadge);
+
+        const remainBadge = document.createElement('span');
+        remainBadge.className = 'badge bg-light text-dark rounded-pill remaining-time ms-2';
+        remainBadge.dataset.due = a.due;
+        li.appendChild(remainBadge);
+
         assignList.appendChild(li);
       });
 
       document.getElementById('todo-section').classList.remove('d-none');
+
+      startRemainingUpdater();
     }
 
     logoutBtn.addEventListener('click', async () => {
