@@ -202,6 +202,37 @@
       letter-spacing: -0.015em;
     }
     /* ------------------------------------------ */
+
+    /* -------- Mobile layout tweaks for TODO list ------- */
+    @media (max-width: 575.98px) {
+      /* Stack title and badges vertically */
+      #todo-section li.list-group-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      /* Ensure anchor takes full width without wrapping onto too many lines */
+      #todo-section li.list-group-item a.text-decoration-none {
+        display: block;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* Right badge box full-width below title */
+      #todo-section li.list-group-item .d-flex.ms-auto {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 0.25rem;
+      }
+      /* Smaller, flexible badges */
+      .due-time,
+      .remaining-time {
+        font-size: 0.7rem !important;
+        padding: 0.25em 0.5em !important;
+        min-width: 0 !important;
+      }
+    }
+    /* --------------------------------------------------- */
   </style>
 </head>
 <body class="py-4">
