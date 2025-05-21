@@ -434,33 +434,6 @@
         events,
         eventColor: '#3788d8',
         eventDidMount: function(info) {
-          // Always set the title attribute so full text appears on hover
-          info.el.setAttribute('title', info.event.title);
-
-          // Dynamically adjust position on hover to keep within viewport
-          const adjustOverflow = () => {
-            const rect = info.el.getBoundingClientRect();
-            const vw = window.innerWidth;
-            // If component spills past the right edge, shift it leftwards
-            if (rect.right > vw) {
-              const shift = rect.right - vw + 4;
-              info.el.style.position = 'relative';
-              info.el.style.left = `-${shift}px`;
-            }
-            // If component spills past left edge, reset
-            if (rect.left < 0) {
-              info.el.style.position = 'relative';
-              info.el.style.left = `${-rect.left + 4}px`;
-            }
-          };
-
-          info.el.addEventListener('mouseenter', adjustOverflow);
-          // Reset on mouse leave
-          info.el.addEventListener('mouseleave', () => {
-            info.el.style.left = '';
-            info.el.style.position = '';
-          });
-
           if (!info.event.extendedProps.completed) {
             info.el.style.fontWeight = 'bold';
             if (info.event.extendedProps.type === 'assign') {
