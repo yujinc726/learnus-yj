@@ -377,8 +377,9 @@
         events,
         eventColor: '#3788d8',
         eventDidMount: function(info) {
+          // Always set the native title attribute so the full text shows on hover
+          info.el.setAttribute('title', info.event.title);
           if (!info.event.extendedProps.completed) {
-            // highlight not completed
             info.el.style.fontWeight = 'bold';
             if (info.event.extendedProps.type === 'assign') {
               info.el.style.backgroundColor = '#dc3545';
