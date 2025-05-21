@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 from typing import Dict, List, Optional, Tuple
 import re
-from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, Depends, Header, status
 from fastapi.responses import JSONResponse, FileResponse
@@ -11,13 +10,6 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from learnus_client import LearnUsClient, LearnUsLoginError
-
-try:
-    from zoneinfo import ZoneInfo  # Python 3.9+
-except ImportError:  # Fallback for older versions
-    from backports.zoneinfo import ZoneInfo  # type: ignore
-
-KST = ZoneInfo("Asia/Seoul")
 
 app = FastAPI(title="LearnUs Alimi API")
 
@@ -82,9 +74,6 @@ def get_courses(client: LearnUsClient = Depends(get_client)):
 @app.get("/events")
 def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(get_client)):
     """Return events aggregated across all courses unless `course_id` is provided."""
-
-    # Current time in KST for deadline comparison
-    now_kst = datetime.now(KST)
 
     # Determine course set
     if course_id is None:
@@ -157,13 +146,17 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                 if not a.due_time:
                     continue
                 # Skip past deadline
-                if a.due_time < now_kst:
+                from datetime import datetime
+                now = datetime.now()
+                if a.due_time < now:
                     continue
                 todo_assigns.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
             elif a.type == "vod":
                 if a.completed or not a.due_time:
                     continue
-                if a.due_time < now_kst:
+                from datetime import datetime
+                now = datetime.now()
+                if a.due_time < now:
                     continue
                 todo_videos.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
 
@@ -205,4 +198,4 @@ def logout(x_auth_token: Optional[str] = Header(None)):
 # Serve simple frontend (static/index.html etc.) under /
 import pathlib
 _static_path = pathlib.Path(__file__).parent / "static"
-app.mount("/", StaticFiles(directory=_static_path, html=True), name="static")
+app.mount("/", StaticFiles(directory=_static_path, html=True), name="static") 
