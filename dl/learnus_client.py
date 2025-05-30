@@ -38,7 +38,7 @@ class LearnUsClient:
         """Perform Yonsei SSO login using the *correct 2025* flow.
 
         The 2025 flow now provides RSA keys via JavaScript instead of hidden inputs:
-        1. Get S1 from spLogin2.php
+        1. Get S1 from spLogin2.php (with proper Referer header)
         2. Submit to PmSSOService to get login form with JavaScript RSA keys
         3. Extract ssoChallenge and keyModulus from JavaScript
         4. Encrypt credentials using RSA and submit to PmSSOAuthService
@@ -48,7 +48,13 @@ class LearnUsClient:
         import re
 
         session = requests.Session()
-        base_headers = {"User-Agent": "Mozilla/5.0"}
+        base_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive"
+        }
 
         def post_request(url: str, headers: dict, data: dict):
             res = session.post(url, headers=headers, data=data)
@@ -85,8 +91,19 @@ class LearnUsClient:
             
             return challenge_match.group(1), modulus_match.group(1)
 
-        # Step 1: Get S1 from spLogin2.php
+        # Step 0: Establish proper session by visiting main page and login page
         headers = base_headers.copy()
+        logger.info("[LearnUs] Establishing session...")
+        
+        # Visit main page first
+        session.get(f"{self.BASE_URL}/", headers=headers)
+        
+        # Visit login page to establish proper referrer chain
+        headers["Referer"] = f"{self.BASE_URL}/"
+        session.get(f"{self.BASE_URL}/login/index.php", headers=headers)
+
+        # Step 1: Get S1 from spLogin2.php (now with proper Referer)
+        headers["Referer"] = f"{self.BASE_URL}/login/index.php"
         res = session.get(f"{self.BASE_URL}/passni/sso/spLogin2.php", headers=headers)
         res.raise_for_status()
         s1 = get_value_from_input(res.text, "S1")
@@ -175,7 +192,7 @@ class LearnUsClient:
 
         # Success – store session
         self.session = session
-        logger.info("[LearnUs] Authenticated as %s using 2025 flow (JS RSA encryption)", username)
+        logger.info("[LearnUs] Authenticated as %s using 2025 flow (with proper Referer headers)", username)
 
     def ensure_logged_in(self) -> requests.Session:
         if self.session is None:
