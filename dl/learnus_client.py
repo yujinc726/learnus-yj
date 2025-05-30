@@ -35,13 +35,17 @@ class LearnUsClient:
     # Public helpers
     # ---------------------------------------------------------------------
     def login(self, username: str, password: str) -> None:
-        """Perform Yonsei SSO login using the *exact* flow that is known to work.
+        """Perform Yonsei SSO login using the *correct 2025* flow.
 
-        This implementation is lifted verbatim (save for minor variable renames)
-        from the user's original script to avoid subtle differences that were
-        causing token-fetch failures.
+        The 2025 flow now provides RSA keys via JavaScript instead of hidden inputs:
+        1. Get S1 from spLogin2.php
+        2. Submit to PmSSOService to get login form with JavaScript RSA keys
+        3. Extract ssoChallenge and keyModulus from JavaScript
+        4. Encrypt credentials using RSA and submit to PmSSOAuthService
+        5. Finalize with spLoginData.php and spLoginProcess.php
         """
         import requests  # local import to be explicit
+        import re
 
         session = requests.Session()
         base_headers = {"User-Agent": "Mozilla/5.0"}
@@ -66,70 +70,87 @@ class LearnUsClient:
                 values[n] = tag["value"]
             return values
 
-        # 0) coursemosLogin – obtain S1
+        def extract_js_rsa_keys(html_text: str):
+            """Extract ssoChallenge and RSA modulus from JavaScript code."""
+            # Extract ssoChallenge
+            challenge_match = re.search(r"var ssoChallenge\s*=\s*['\"]([^'\"]+)['\"]", html_text)
+            if not challenge_match:
+                raise LearnUsLoginError("ssoChallenge not found in JavaScript")
+            
+            # Extract RSA public key (modulus)
+            # Look for the full hex string in setPublic call
+            modulus_match = re.search(r"rsa\.setPublic\s*\(\s*['\"]([0-9a-fA-F]+)['\"]", html_text)
+            if not modulus_match:
+                raise LearnUsLoginError("RSA modulus not found in JavaScript")
+            
+            return challenge_match.group(1), modulus_match.group(1)
+
+        # Step 1: Get S1 from spLogin2.php
         headers = base_headers.copy()
-        headers["Referer"] = f"{self.BASE_URL}/login/method/sso.php"
-        data = {
-            "ssoGubun": "Login",
-            "logintype": "sso",
-            "type": "popup_login",
-            "username": username,
-            "password": password,
-        }
-        res = post_request(f"{self.BASE_URL}/passni/sso/coursemosLogin.php", headers, data)
+        res = session.get(f"{self.BASE_URL}/passni/sso/spLogin2.php", headers=headers)
+        res.raise_for_status()
         s1 = get_value_from_input(res.text, "S1")
         if not s1:
-            raise LearnUsLoginError("Failed to obtain S1 (step 0)")
+            raise LearnUsLoginError("Failed to obtain S1 from spLogin2.php")
 
-        # 1) PmSSOService – obtain ssoChallenge & keyModulus
-        headers["Referer"] = f"{self.BASE_URL}/"
-        data.update({
+        # Step 2: Submit to PmSSOService to get login form with JavaScript RSA keys
+        headers["Referer"] = f"{self.BASE_URL}/passni/sso/spLogin2.php"
+        data = {
             "app_id": "ednetYonsei",
             "retUrl": self.BASE_URL,
-            "failUrl": f"{self.BASE_URL}/login/index.php",
+            "failUrl": self.BASE_URL,
             "baseUrl": self.BASE_URL,
             "S1": s1,
-            "loginUrl": f"{self.BASE_URL}/passni/sso/coursemosLogin.php",
-            "ssoGubun": "Login",
-            "refererUrl": self.BASE_URL,
-            "test": "SSOAuthLogin",
-            "loginType": "invokeID",
-            "E2": "",
-        })
+            "ssoGubun": "",
+            "refererUrl": "",
+        }
         res = post_request("https://infra.yonsei.ac.kr/sso/PmSSOService", headers, data)
-        vals = get_multiple_values(res.text, ["ssoChallenge", "keyModulus"])
-        if not vals:
-            raise LearnUsLoginError("Failed to obtain ssoChallenge/keyModulus (step 1)")
-        sc, km = vals["ssoChallenge"], vals["keyModulus"]
-
-        # 2) coursemosLogin – send encrypted credentials, get new S1
-        key_pair = RSA.construct((int(km, 16), 0x10001))
+        
+        # Step 3: Extract RSA keys from JavaScript in the response
+        try:
+            sso_challenge, key_modulus = extract_js_rsa_keys(res.text)
+        except LearnUsLoginError:
+            raise LearnUsLoginError("Failed to extract RSA keys from PmSSOService JavaScript")
+        
+        # Step 4: Encrypt credentials using RSA (same as before)
+        from Crypto.PublicKey import RSA
+        from Crypto.Cipher import PKCS1_v1_5
+        
+        key_pair = RSA.construct((int(key_modulus, 16), 0x10001))
         cipher = PKCS1_v1_5.new(key_pair)
-        payload = f'{{"userid":"{username}","userpw":"{password}","ssoChallenge":"{sc}"}}'
+        payload = f'{{"userid":"{username}","userpw":"{password}","ssoChallenge":"{sso_challenge}"}}'
         e2 = cipher.encrypt(payload.encode()).hex()
-
-        headers["Referer"] = "https://infra.yonsei.ac.kr/"
-        data.update({
-            "ssoChallenge": sc,
-            "keyModulus": km,
-            "keyExponent": "10001",
-            "E2": e2,
+        
+        # Extract form data from the login form
+        soup = BeautifulSoup(res.text, "html.parser")
+        form = soup.find("form", {"action": "/sso/PmSSOAuthService"})
+        if not form:
+            raise LearnUsLoginError("PmSSOAuthService form not found in PmSSOService response")
+        
+        # Get all hidden inputs from the form
+        form_data = {}
+        for inp in form.find_all("input"):
+            name = inp.get("name")
+            value = inp.get("value", "")
+            if name and inp.get("type") == "hidden":
+                form_data[name] = value
+        
+        # Step 5: Submit encrypted credentials to PmSSOAuthService
+        headers["Referer"] = "https://infra.yonsei.ac.kr/sso/PmSSOService"
+        form_data.update({
+            "loginId": username,
+            "loginPasswd": password,
+            "E2": e2,  # This was the missing piece!
         })
-        res = post_request(f"{self.BASE_URL}/passni/sso/coursemosLogin.php", headers, data)
-        s1 = get_value_from_input(res.text, "S1")
-        if not s1:
-            raise LearnUsLoginError("Failed to obtain S1 (step 2)")
-
-        # 3) PmSSOAuthService – get E3/E4/S2/CLTID
-        headers["Referer"] = f"{self.BASE_URL}/"
-        data.update({"S1": s1})
-        res = post_request("https://infra.yonsei.ac.kr/sso/PmSSOAuthService", headers, data)
+        res = post_request("https://infra.yonsei.ac.kr/sso/PmSSOAuthService", headers, form_data)
+        
+        # Extract E3, E4, S2, CLTID from the response
         vals = get_multiple_values(res.text, ["E3", "E4", "S2", "CLTID"])
         if not vals:
-            raise LearnUsLoginError("Failed to obtain E3/E4/S2/CLTID (step 3)")
+            raise LearnUsLoginError("Failed to obtain E3/E4/S2/CLTID from PmSSOAuthService")
         e3, e4, s2, cltid = vals["E3"], vals["E4"], vals["S2"], vals["CLTID"]
 
-        # 4) spLoginData & spLoginProcess – finalise session
+        # Step 6: Finalize login with spLoginData.php
         headers["Referer"] = "https://infra.yonsei.ac.kr/"
         data = {
             "app_id": "ednetYonsei",
@@ -148,11 +169,13 @@ class LearnUsClient:
             "password": password,
         }
         post_request(f"{self.BASE_URL}/passni/sso/spLoginData.php", headers, data)
+        
+        # Step 7: Complete session with spLoginProcess.php
         session.get(f"{self.BASE_URL}/passni/spLoginProcess.php")
 
         # Success – store session
         self.session = session
-        logger.info("[LearnUs] Authenticated as %s", username)
+        logger.info("[LearnUs] Authenticated as %s using 2025 flow (JS RSA encryption)", username)
 
     def ensure_logged_in(self) -> requests.Session:
         if self.session is None:
