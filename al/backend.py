@@ -113,8 +113,9 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
         for cid, acts in pool.map(fetch, course_ids):
             activities_by_course[cid] = acts
 
-    # Collect assignments that require detail fetch
+    # Collect assignments and quizzes that require detail fetch
     assign_need_detail: List[Tuple[int, int, object]] = []  # (course_id, module_id, activity_ref)
+    quiz_need_detail: List[Tuple[int, int, object]] = []    # (course_id, module_id, activity_ref)
 
     for cid in course_ids:
         activities = activities_by_course[cid]
@@ -127,11 +128,19 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                 # If due_time already known, we may not need detail fetch
                 if a.due_time is None:
                     assign_need_detail.append((cid, a.id, a))
-            # nothing else yet
+            elif a.type == "quiz":
+                # Skip if already completed
+                if a.completed:
+                    continue
+                # Quizzes always need detail fetch for due_time
+                quiz_need_detail.append((cid, a.id, a))
 
     # Fetch assignment details in parallel
     def fetch_assign(module_id):
         return module_id, client.get_assignment_detail(module_id)
+
+    def fetch_quiz(module_id):
+        return module_id, client.get_quiz_detail(module_id)
 
     if assign_need_detail:
         with ThreadPoolExecutor(max_workers=min(16, len(assign_need_detail))) as pool:
@@ -141,6 +150,18 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                     if mid == module_id:
                         act.extra.update(detail)
                         if detail.get("due_time") and act.due_time is None:
+                            act.due_time = detail["due_time"]
+                        break
+
+    # Fetch quiz details in parallel
+    if quiz_need_detail:
+        with ThreadPoolExecutor(max_workers=min(16, len(quiz_need_detail))) as pool:
+            for module_id, detail in pool.map(lambda t: fetch_quiz(t[1]), quiz_need_detail):
+                # find corresponding activity object
+                for cid, mid, act in quiz_need_detail:
+                    if mid == module_id:
+                        act.extra.update(detail)
+                        if detail.get("due_time"):
                             act.due_time = detail["due_time"]
                         break
 
@@ -170,13 +191,12 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
             elif a.type == "quiz":
                 if a.completed:
                     continue
-                # 퀴즈는 마감일이 없을 수 있으므로 due_time이 없어도 표시
-                if a.due_time and a.due_time < now_kst:
+                # 퀴즈는 항상 마감일이 있음
+                if not a.due_time:
+                    continue  # 마감일을 가져오지 못한 경우 제외
+                if a.due_time < now_kst:
                     continue
-                quiz_data = {"id": a.id, "title": full_title}
-                if a.due_time:
-                    quiz_data["due"] = a.due_time.isoformat()
-                todo_quizzes.append(quiz_data)
+                todo_quizzes.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
 
             if a.due_time:
                 calendar_events.append({
@@ -192,8 +212,7 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     calendar_events.sort(key=lambda x: x["start"])
     todo_videos.sort(key=lambda x: x["due"])
     todo_assigns.sort(key=lambda x: x["due"])
-    # 퀴즈는 due가 없을 수 있으므로 안전하게 정렬
-    todo_quizzes.sort(key=lambda x: x.get("due", "9999-12-31"))
+    todo_quizzes.sort(key=lambda x: x["due"])
 
     return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns, "quizzes": todo_quizzes}
 

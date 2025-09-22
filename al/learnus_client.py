@@ -245,6 +245,16 @@ class LearnUsClient:
         res.raise_for_status()
         return parse_assignment_detail(res.text)
 
+    def get_quiz_detail(self, quiz_module_id: int):
+        """Return dictionary with due time information for a given quiz module."""
+        from learnus_parser import parse_quiz_detail
+
+        session = self.ensure_logged_in()
+        url = f"{self.BASE_URL}/mod/quiz/view.php?id={quiz_module_id}"
+        res = session.get(url)
+        res.raise_for_status()
+        return parse_quiz_detail(res.text)
+
     def get_courses(self):
         """Return list of courses as dicts {id, name}"""
         from learnus_parser import parse_dashboard_courses

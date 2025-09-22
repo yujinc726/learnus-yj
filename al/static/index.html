@@ -529,27 +529,19 @@
         link.className = 'text-decoration-none';
         li.appendChild(link);
         
-        if (q.due) {
-          const dueBadge = document.createElement('span');
-          dueBadge.className = 'badge bg-success rounded-pill due-time';
-          dueBadge.textContent = new Date(q.due).toLocaleString('ko-KR');
+        const dueBadge = document.createElement('span');
+        dueBadge.className = 'badge bg-success rounded-pill due-time';
+        dueBadge.textContent = new Date(q.due).toLocaleString('ko-KR');
 
-          const remainBadge = document.createElement('span');
-          remainBadge.className = 'badge rounded-pill remaining-time';
-          remainBadge.dataset.due = q.due;
+        const remainBadge = document.createElement('span');
+        remainBadge.className = 'badge rounded-pill remaining-time';
+        remainBadge.dataset.due = q.due;
 
-          const rightBox = document.createElement('div');
-          rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
-          rightBox.appendChild(remainBadge);
-          rightBox.appendChild(dueBadge);
-          li.appendChild(rightBox);
-        } else {
-          // 마감일이 없는 퀴즈의 경우 간단한 배지만 표시
-          const noDueBadge = document.createElement('span');
-          noDueBadge.className = 'badge bg-success rounded-pill ms-auto';
-          noDueBadge.textContent = '마감일 없음';
-          li.appendChild(noDueBadge);
-        }
+        const rightBox = document.createElement('div');
+        rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+        rightBox.appendChild(remainBadge);
+        rightBox.appendChild(dueBadge);
+        li.appendChild(rightBox);
 
         quizList.appendChild(li);
       });

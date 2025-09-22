@@ -11,6 +11,7 @@ __all__ = [
     "Activity",
     "parse_course_activities",
     "parse_assignment_detail",
+    "parse_quiz_detail",
     "parse_dashboard_courses",
 ]
 
@@ -180,6 +181,56 @@ def parse_assignment_detail(html: str) -> dict:
                 info["due_time"] = _parse_datetime(value)
             except ValueError:
                 pass
+
+    return info
+
+
+def parse_quiz_detail(html: str) -> dict:
+    """Parse LearnUs quiz detail page and extract due time info.
+
+    Returns
+    -------
+    dict with keys:
+        due_time : datetime | None
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    info = {
+        "due_time": None,
+    }
+
+    # Look for due time patterns in both Korean and English
+    # Common patterns: "종료일시 : YYYY-MM-DD HH:MM", "Due date : YYYY-MM-DD HH:MM", etc.
+    due_time_keywords = [
+        "종료일시",      # Korean: End time
+        "마감일시",      # Korean: Due time
+        "Due date",     # English
+        "End time",     # English
+        "Closing time", # English
+        "Close date",   # English
+        "Deadline",     # English
+    ]
+    
+    for p in soup.find_all("p"):
+        text = p.get_text(strip=True)
+        for keyword in due_time_keywords:
+            if keyword in text and ":" in text:
+                # Extract the datetime part after the first ":"
+                parts = text.split(":", 1)
+                if len(parts) >= 2:
+                    date_str = parts[1].strip()
+                    try:
+                        # Parse "2025-09-27 23:59" format
+                        info["due_time"] = _parse_datetime(date_str + ":00")  # Add seconds
+                        break
+                    except ValueError:
+                        # Try without adding seconds in case it's already full format
+                        try:
+                            info["due_time"] = _parse_datetime(date_str)
+                            break
+                        except ValueError:
+                            continue
+        if info["due_time"]:  # If we found a valid due_time, stop looking
+            break
 
     return info
 
