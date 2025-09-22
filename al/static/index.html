@@ -33,6 +33,7 @@
     h1 {
       font-weight: 700;
       background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       max-width: 900px;
@@ -273,9 +274,13 @@
       <h4>시청해야 할 동영상</h4>
       <ul id="video-list" class="list-group"></ul>
     </div>
-    <div class="col-12">
+    <div class="col-12 mb-3">
       <h4>제출해야 할 과제</h4>
       <ul id="assign-list" class="list-group"></ul>
+    </div>
+    <div class="col-12">
+      <h4>풀어야 할 퀴즈</h4>
+      <ul id="quiz-list" class="list-group"></ul>
     </div>
   </div>
 
@@ -416,7 +421,7 @@
     async function loadAllEvents() {
       const data = await apiGet('/al/events');
       renderCalendar(data.calendar);
-      renderTodos(data.videos, data.assignments);
+      renderTodos(data.videos, data.assignments, data.quizzes);
     }
 
     function renderCalendar(events) {
@@ -438,6 +443,8 @@
             info.el.style.fontWeight = 'bold';
             if (info.event.extendedProps.type === 'assign') {
               info.el.style.backgroundColor = '#dc3545';
+            } else if (info.event.extendedProps.type === 'quiz') {
+              info.el.style.backgroundColor = '#198754';
             }
           }
         }
@@ -445,9 +452,10 @@
       calendar.render();
     }
 
-    function renderTodos(videos, assigns) {
+    function renderTodos(videos, assigns, quizzes) {
       const videoList = document.getElementById('video-list');
       const assignList = document.getElementById('assign-list');
+      const quizList = document.getElementById('quiz-list');
 
       videoList.innerHTML = videos.length ? '' : '<li class="list-group-item">모두 완료!</li>';
       videos.forEach(v => {
@@ -507,6 +515,43 @@
         li.appendChild(rightBox);
 
         assignList.appendChild(li);
+      });
+
+      quizList.innerHTML = quizzes.length ? '' : '<li class="list-group-item">모두 완료!</li>';
+      quizzes.forEach(q => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        const link = document.createElement('a');
+        link.href = `https://ys.learnus.org/mod/quiz/view.php?id=${q.id}`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = q.title;
+        link.className = 'text-decoration-none';
+        li.appendChild(link);
+        
+        if (q.due) {
+          const dueBadge = document.createElement('span');
+          dueBadge.className = 'badge bg-success rounded-pill due-time';
+          dueBadge.textContent = new Date(q.due).toLocaleString('ko-KR');
+
+          const remainBadge = document.createElement('span');
+          remainBadge.className = 'badge rounded-pill remaining-time';
+          remainBadge.dataset.due = q.due;
+
+          const rightBox = document.createElement('div');
+          rightBox.className = 'd-flex align-items-center gap-2 ms-auto';
+          rightBox.appendChild(remainBadge);
+          rightBox.appendChild(dueBadge);
+          li.appendChild(rightBox);
+        } else {
+          // 마감일이 없는 퀴즈의 경우 간단한 배지만 표시
+          const noDueBadge = document.createElement('span');
+          noDueBadge.className = 'badge bg-success rounded-pill ms-auto';
+          noDueBadge.textContent = '퀴즈';
+          li.appendChild(noDueBadge);
+        }
+
+        quizList.appendChild(li);
       });
 
       document.getElementById('todo-section').classList.remove('d-none');

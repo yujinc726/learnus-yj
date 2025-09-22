@@ -95,6 +95,7 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     calendar_events: List[dict] = []
     todo_videos: List[dict] = []
     todo_assigns: List[dict] = []
+    todo_quizzes: List[dict] = []
 
     # Map course id to name for prefixing titles
     course_name_map = {
@@ -166,6 +167,16 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
                 if a.due_time < now_kst:
                     continue
                 todo_videos.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
+            elif a.type == "quiz":
+                if a.completed:
+                    continue
+                # 퀴즈는 마감일이 없을 수 있으므로 due_time이 없어도 표시
+                if a.due_time and a.due_time < now_kst:
+                    continue
+                quiz_data = {"id": a.id, "title": full_title}
+                if a.due_time:
+                    quiz_data["due"] = a.due_time.isoformat()
+                todo_quizzes.append(quiz_data)
 
             if a.due_time:
                 calendar_events.append({
@@ -181,8 +192,10 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     calendar_events.sort(key=lambda x: x["start"])
     todo_videos.sort(key=lambda x: x["due"])
     todo_assigns.sort(key=lambda x: x["due"])
+    # 퀴즈는 due가 없을 수 있으므로 안전하게 정렬
+    todo_quizzes.sort(key=lambda x: x.get("due", "9999-12-31"))
 
-    return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns}
+    return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns, "quizzes": todo_quizzes}
 
 
 # Simple health/token validation endpoint

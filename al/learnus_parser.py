@@ -81,7 +81,7 @@ def parse_course_activities(html: str) -> List[Activity]:
             if cls.startswith("modtype_"):
                 modtype = cls.replace("modtype_", "")
                 break
-        if modtype not in {"vod", "assign"}:
+        if modtype not in {"vod", "assign", "quiz"}:
             continue  # skip unsupported types for now
 
         # Title inside span.instancename (without nested span.accesshide)
